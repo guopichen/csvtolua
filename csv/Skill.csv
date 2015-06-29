@@ -1,0 +1,10 @@
+,,,,,,,,,,,,,,,,,
+"ID1:对单个目标攻击,目标类型为Boss,效果为:技能开始时,播放一个火效果,然后同时播放另外两个火球从两个方向飞行到目标身上,紧接着播放爆炸,打中目标时,目标身上增加一个持续性减血的buff",,,,,,,,,,,,,,,,,
+ID,SkillType,SkillValue,SkillCount,CritRate,Target,EffectID,EffectArg,EffectStep,EffectRes,BuffID,BuffStep,BuffRate,BuffRes,SkillUpValue,SkillUpRate,SkillName,SkillExplain
+1,1,30,1,100,1,Frie;ArrowEff;ArrowEff1;Bomb,1;1;1;1,start;casting;casting;end,aa:Frame;ChooseServerHot.Img;XX:Frame;YY:Frame,RedHpBuff,end,1,xx:Img,,,,
+,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,
