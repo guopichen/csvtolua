@@ -11,6 +11,8 @@ local sen_split = "|"
 
 local in_path = "csv"
 local out_path = "csvdata"
+-- local in_path = "server/GameServer/ServerData/csv"
+-- local out_path = "client/csvdata"
 local file_type = "csv"
 
 -------------------树形打印table-----------------
@@ -173,9 +175,11 @@ end
 local function LoadCsv(fileName)  
     local ret = {};  
   
-    -- print("-----"..fileName)
+     --print("-----"..fileName)
     local file = io.open(fileName, "r")  
-    assert(file)  
+    if not file then
+		return ret
+	end
     while true do  
         local line = getRowContent(file)  
         if not line then break end  
@@ -212,7 +216,7 @@ local function prase_csvtabel( t, out_t )
     out_t["keyword"] = {}
 
     local col_line = 1
-    for i=1, table.maxn(t) do
+    for i=1, #t do
         if t[i][1] == "ID" then -- "ID"前的行 不读取
             col_line = i
             break
@@ -222,7 +226,7 @@ local function prase_csvtabel( t, out_t )
 
 
     local keys = t[col_line]
-    local max_col_len = table.maxn(keys)
+    local max_col_len = #keys 
     for i=2, max_col_len do
       local key = keys[i]
       
@@ -232,13 +236,13 @@ local function prase_csvtabel( t, out_t )
         end
     end
     
-    for line=2,table.maxn(t) do -- 忽略第一个id
+    for line=2, #t do -- 忽略第一个id
         -- print("-----line : "..line)
         local values = t[line]
         local id = values[1]
         if id ~= "" and line>col_line-1 then --ID之前的行不写入
             out_t[id] = {}
-            for col=2,table.maxn(values) do
+            for col=2,#values do
                 if col>max_col_len then break end
               local value = values[col]
               -- if value ~= "" then 空的也要写入文件, 否则会错位
@@ -322,7 +326,7 @@ end
 --
 local function saveto_luatabel( filename, t, path, keys )
     -- local aaa = path..filename
-    -- print("aaa: "..aaa)
+    print( path .. filename )
     local file = io.open(path..filename, "w");
     assert(file);
     -- print(filename)
@@ -342,7 +346,8 @@ end
 
 function load_filenames(directory,type,t)
    local i, popen = 0, io.popen
-   for filename in popen('ls  "'..directory..'"'):lines() do  --Linux 
+   -- for filename in popen('dir /B "'..directory..'"'):lines() do  --windows
+   for filename in popen('ls  "'..directory..'"'):lines() do -- Linux 
       i = i + 1
       local a = string.find(filename,"."..type)
                if a~=nil then  
@@ -360,7 +365,9 @@ local function save_game_tab( filename, filenames, path, keys )
     file:write("local t =\n {")
     for k,v in ipairs(filenames) do
         file:write('["'..v..'"]')
-        file:write(' = import ("'..'app.'..out_path..'.') -- import
+        -- file:write(' = import ("'..'app.'..out_path..'.') -- import
+        -- file:write(' = import ("'..out_path..'.') -- import
+            file:write(' = import ("csvdata'..'.') -- import
         file:write(v..'")')
         file:write(",\n")
     end
@@ -461,8 +468,9 @@ local function run_stage()
     -- 定义
     local file_count = 0
     local files = {}
-    load_filenames('./csv/stage/',file_type, files)
-    os.execute("mkdir " .. out_path)
+	local stagePath = in_path .. '/stage/'
+    load_filenames( inpath,file_type, files)
+    os.execute("mkdir " .. out_path )
     local out_t = {}
     local filenames = {}
 
@@ -472,7 +480,7 @@ local function run_stage()
             print( "found a new file ! # " .. i )
             print( "file name is " .. '"' .. value .. '"' )
             i = i + 1
-            t = LoadCsv(in_path.."/stage/"..value..".csv")
+            t = LoadCsv( stagepath..value..".csv")
             
             local newstage = createWave( t )
             save_stage( value , newstage )
@@ -487,27 +495,28 @@ local function run(  )
     -- 定义
     local file_count = 0
     local files = {}
-    load_filenames('./csv/',file_type, files)
-    os.execute("mkdir " .. out_path)
+    load_filenames( in_path,file_type, files)
+    -- os.execute("mkdir client\\csvdata") -- windows
+    os.execute('mkdir '..out_path) -- Linux
     local out_t = {}
     local filenames = {}
     for key, value in pairs(files) do
         local name = value
         t = LoadCsv(in_path.."/"..name..".csv")
         prase_csvtabel(t,out_t)
-        saveto_luatabel(name..".lua",out_t,"./csvdata/", t)
+        saveto_luatabel(name..".lua",out_t,out_path .. "/", t)
         out_t = {} -- 置空
         out_keys = {}
         file_count = file_count + 1
 
         filenames[file_count] = name
     end 
-    save_game_tab("csvdatas.lua",filenames,"./csvdata/",t)
+    save_game_tab("csvdatas.lua",filenames,out_path .. "/",t)
     print( "file amount: " .. file_count )
 end
 
 run()
-run_stage()
+-- run_stage()
 
 
 
